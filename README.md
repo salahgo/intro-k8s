@@ -1,13 +1,6 @@
 Installation et configuration de Kubernetes
 ======================================================
 
-Au cours de nos TPs nous allons passer rapidement en revue deux manières de mettre en place Kubernetes :
-
-*   Un cluster de développement avec `minikube`
-*   Un cluster managed loué chez un provider (Scaleway, DigitalOcean, Azure ou Google Cloud)
-
-Nous allons d’abord passer par la première option.
-
 Découverte de Kubernetes
 ------------------------
 
