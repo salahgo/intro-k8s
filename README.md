@@ -40,13 +40,13 @@ Affichez à nouveau la version `kubectl version`. Cette fois-ci la version de ku
 
 Pour permettre à `kubectl` de compléter le nom des commandes et ressources avec `<Tab>` il est utile d’installer l’autocomplétion pour Bash :
 
-    ```
+    
     sudo apt install bash-completion
     
     source <(kubectl completion bash)
     
     echo "source <(kubectl completion bash)" >> ${HOME}/.bashrc
-    ```
+    
     
 
 **Vous pouvez désormais appuyer sur `<Tab>` pour compléter vos commandes `kubectl`, c’est très utile !**
@@ -149,11 +149,11 @@ Lens est une interface graphique (un client “lourd”) pour Kubernetes. Elle s
 
 Vous pouvez l’installer en lançant ces commandes :
 
-    ```
+    
     ## Install Lens
     curl -LO https://github.com/lensapp/lens/releases/download/v4.1.4/Lens-4.1.4.amd64.deb
     sudo dpkg -i Lens-4.1.4.amd64.deb
-    ```
+    
     
 
 *   Lancez l’application `Lens` dans le menu “internet” de votre machine VNC
