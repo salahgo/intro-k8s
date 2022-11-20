@@ -1,92 +1,147 @@
-# Introduction Kubernetes
+03 - TP1 - Installation et configuration de Kubernetes
+======================================================
+
+Au cours de nos TPs nous allons passer rapidement en revue deux manières de mettre en place Kubernetes :
+
+*   Un cluster de développement avec `minikube`
+*   Un cluster managed loué chez un provider (Scaleway, DigitalOcean, Azure ou Google Cloud)
+
+Nous allons d’abord passer par la première option.
+
+Découverte de Kubernetes
+------------------------
+
+### Installer le client CLI `kubectl`
+
+kubectl est le point d’entré universel pour contrôler tous les type de cluster kubernetes. C’est un client en ligne de commande qui communique en REST avec l’API d’un cluster.
+
+Nous allons explorer kubectl au fur et à mesure des TPs. Cependant à noter que :
+
+*   `kubectl` peut gérer plusieurs clusters/configurations et switcher entre ces configurations
+*   `kubectl` est nécessaire pour le client graphique `Lens` que nous utiliserons plus tard.
+
+La méthode d’installation importe peu. Pour installer kubectl sur Ubuntu nous ferons simplement: `sudo snap install kubectl --classic`.
+
+*   Faites `kubectl version` pour afficher la version du client kubectl.
+
+### Installer Minikube
+
+**Minikube** est la version de développement de Kubernetes (en local) la plus répendue. Elle est maintenue par la cloud native foundation et très proche de kubernetes upstream. Elle permet de simuler un ou plusieurs noeuds de cluster sous forme de conteneurs docker ou de machines virtuelles.
+
+*   Pour installer minikube la méthode recommandée est indiquée ici: [https://minikube.sigs.k8s.io/docs/start/](https://minikube.sigs.k8s.io/docs/start/)
+
+Nous utiliserons classiquement `docker` comme runtime pour minikube (les noeuds k8s seront des conteneurs simulant des serveurs). Ceci est, bien sur, une configuration de développement. Elle se comporte cependant de façon très proche d’un véritable cluster.
+
+*   Si Docker n’est pas installé, installer Docker avec la commande en une seule ligne : `curl -fsSL https://get.docker.com | sh`, puis ajoutez-vous au groupe Docker avec `sudo usermod -a -G docker <votrenom>`, et faites `sudo reboot` pour que cela prenne effet.
+    
+*   Pour lancer le cluster faites simplement: `minikube start` (il est également possible de préciser le nombre de coeurs de calcul, la mémoire et et d’autre paramètre pour adapter le cluster à nos besoins.)
+    
+
+Minikube configure automatiquement kubectl (dans le fichier `~/.kube/config`) pour qu’on puisse se connecter au cluster de développement.
+
+*   Testez la connexion avec `kubectl get nodes`.
+
+Affichez à nouveau la version `kubectl version`. Cette fois-ci la version de kubernetes qui tourne sur le cluster actif est également affichée. Idéalement le client et le cluster devrait être dans la même version mineure par exemple `1.20.x`.
+
+##### Bash completion
+
+Pour permettre à `kubectl` de compléter le nom des commandes et ressources avec `<Tab>` il est utile d’installer l’autocomplétion pour Bash :
+
+    sudo apt install bash-completion
+    
+    source <(kubectl completion bash)
+    
+    echo "source <(kubectl completion bash)" >> ${HOME}/.bashrc
+    
+
+**Vous pouvez désormais appuyer sur `<Tab>` pour compléter vos commandes `kubectl`, c’est très utile !**
+
+### Explorons notre cluster k8s
+
+Notre cluster k8s est plein d’objets divers, organisés entre eux de façon dynamique pour décrire des applications, tâches de calcul, services et droits d’accès. La première étape consiste à explorer un peu le cluster :
+
+*   Listez les nodes pour récupérer le nom de l’unique node (`kubectl get nodes`) puis affichez ses caractéristiques avec `kubectl describe node/minikube`.
+
+La commande `get` est générique et peut être utilisée pour récupérer la liste de tous les types de ressources.
+
+De même, la commande `describe` peut s’appliquer à tout objet k8s. On doit cependant préfixer le nom de l’objet par son type (ex : `node/minikube` ou `nodes minikube`) car k8s ne peut pas deviner ce que l’on cherche quand plusieurs ressources ont le même nom.
+
+*   Pour afficher tous les types de ressources à la fois que l’on utilise : `kubectl get all`
+
+    NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+    service/kubernetes   ClusterIP   10.96.0.1   <none>        443/TCP   2m34s
+    
+
+Il semble qu’il n’y a qu’une ressource dans notre cluster. Il s’agit du service d’API Kubernetes, pour qu’on puisse communiquer avec le cluster.
+
+En réalité il y en a généralement d’autres cachés dans les autres `namespaces`. En effet les éléments internes de Kubernetes tournent eux-mêmes sous forme de services et de daemons Kubernetes. Les _namespaces_ sont des groupes qui servent à isoler les ressources de façon logique et en termes de droits (avec le _Role-Based Access Control_ (RBAC) de Kubernetes).
+
+Pour vérifier cela on peut :
+
+*   Afficher les namespaces : `kubectl get namespaces`
+
+Un cluster Kubernetes a généralement un namespace appelé `default` dans lequel les commandes sont lancées et les ressources créées si on ne précise rien. Il a également aussi un namespace `kube-system` dans lequel résident les processus et ressources système de k8s. Pour préciser le namespace on peut rajouter l’argument `-n` à la plupart des commandes k8s.
+
+*   Pour lister les ressources liées au `kubectl get all -n kube-system`.
+    
+*   Ou encore : `kubectl get all --all-namespaces` (peut être abrégé en `kubectl get all -A`) qui permet d’afficher le contenu de tous les namespaces en même temps.
+    
+*   Pour avoir des informations sur un namespace : `kubectl describe namespace/kube-system`
+    
+
+### Déployer une application en CLI
+
+Nous allons maintenant déployer une première application conteneurisée. Le déploiement est un peu plus complexe qu’avec Docker, en particulier car il est séparé en plusieurs objets et plus configurable.
+
+*   Pour créer un déploiement en ligne de commande (par opposition au mode déclaratif que nous verrons plus loin), on peut lancer par exemple: `kubectl create deployment rancher-demo --image=monachus/rancher-demo`.
+
+Cette commande crée un objet de type `deployment`. Nous pourvons étudier ce deployment avec la commande `kubectl describe deployment/rancher-demo`.
+
+*   Notez la liste des événements sur ce déploiement en bas de la description.
+    
+*   De la même façon que dans la partie précédente, listez les `pods` avec `kubectl`. Combien y en a-t-il ?
+    
+*   Agrandissons ce déploiement avec `kubectl scale deployment rancher-demo --replicas=5`
+    
+*   `kubectl describe deployment/rancher-demo` permet de constater que le service est bien passé à 5 replicas.
+    
+    *   Observez à nouveau la liste des évènements, le scaling y est enregistré…
+    *   Listez les pods pour constater
+
+A ce stade impossible d’afficher l’application : le déploiement n’est pas encore accessible de l’extérieur du cluster. Pour régler cela nous devons l’exposer grace à un service :
+
+*   `kubectl expose deployment rancher-demo --type=NodePort --port=8080 --name=rancher-demo-service`
+    
+*   Affichons la liste des services pour voir le résultat: `kubectl get services`
+    
+
+Un service permet de créer un point d’accès unique exposant notre déploiement. Ici nous utilisons le type Nodeport car nous voulons que le service soit accessible de l’extérieur par l’intermédiaire d’un forwarding de port.
+
+Avec minikube ce forwarding de port doit être concrêtisé avec la commande `minikube service rancher-demo-service`. Normalement la page s’ouvre automatiquement et nous voyons notre application.
+
+*   Sauriez-vous expliquer ce que l’app fait ?
+*   Pour le comprendre ou le confirmer, diminuez le nombre de réplicats à l’aide de la commande utilisée précédement pour passer à 5 réplicats. Qu se passe-t-il ?
+
+Une autre méthode pour accéder à un service (quel que soit sont type) en mode développement est de forwarder le traffic par l’intermédiaire de kubectl (et des composants kube-proxy installés sur chaque noeuds du cluster).
+
+*   Pour cela on peut par exemple lancer: `kubectl port-forward svc/rancher-demo-service 8080:8080 --address 127.0.0.1`
+*   Vous pouvez désormais accéder à votre app via via kubectl sur: `http://localhost:8080`. Quelle différence avec l’exposition précédente via minikube ?
+
+\=> Un seul conteneur s’affiche. En effet `kubectl port-forward` sert à créer une connexion de developpement/debug qui pointe toujours vers le même pod en arrière plan.
+
+Pour exposer cette application en production sur un véritable cluster, nous devrions plutôt avoir recours à service de type un LoadBalancer. Mais minikube ne propose pas par défaut de loadbalancer. Nous y reviendrons dans le cours sur les objets kubernetes.
+
+#### Simplifier les lignes de commande k8s
+
+*   Pour gagner du temps on dans les commandes Kubernetes on peut définir un alias: `alias kc='kubectl'` (à mettre dans votre `.bash_profile` en faisant `echo "alias kc='kubectl'" >> ~/.bash_profile`, puis en faisant `source ~/.bash_profile`).
+    
+*   Vous pouvez ensuite remplacer `kubectl` par `kc` dans les commandes.
+    
+*   Également pour gagner du temps en ligne de commande, la plupart des mots-clés de type Kubernetes peuvent être abrégés :
+    
+    *   `services` devient `svc`
+    *   `deployments` devient `deploy`
+    *   etc.
 
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.com/eps_devops/intro-k8s.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/eps_devops/intro-k8s/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+*   Essayez d’afficher les service accounts (users) et les namespaces avec une commande courte.
