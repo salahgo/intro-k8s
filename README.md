@@ -1,4 +1,4 @@
-03 - TP1 - Installation et configuration de Kubernetes
+Installation et configuration de Kubernetes
 ======================================================
 
 Au cours de nos TPs nous allons passer rapidement en revue deux manières de mettre en place Kubernetes :
