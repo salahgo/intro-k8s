@@ -40,11 +40,13 @@ Affichez à nouveau la version `kubectl version`. Cette fois-ci la version de ku
 
 Pour permettre à `kubectl` de compléter le nom des commandes et ressources avec `<Tab>` il est utile d’installer l’autocomplétion pour Bash :
 
+    ```
     sudo apt install bash-completion
     
     source <(kubectl completion bash)
     
     echo "source <(kubectl completion bash)" >> ${HOME}/.bashrc
+    ```
     
 
 **Vous pouvez désormais appuyer sur `<Tab>` pour compléter vos commandes `kubectl`, c’est très utile !**
@@ -61,8 +63,10 @@ De même, la commande `describe` peut s’appliquer à tout objet k8s. On doit c
 
 *   Pour afficher tous les types de ressources à la fois que l’on utilise : `kubectl get all`
 
+    ```
     NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
-    service/kubernetes   ClusterIP   10.96.0.1   <none>        443/TCP   2m34s
+    service/kubernetes   ClusterIP   10.152.183.1   <none>        443/TCP   2m34s
+    ```
     
 
 Il semble qu’il n’y a qu’une ressource dans notre cluster. Il s’agit du service d’API Kubernetes, pour qu’on puisse communiquer avec le cluster.
@@ -138,3 +142,20 @@ Pour exposer cette application en production sur un véritable cluster, nous dev
 
 
 *   Essayez d’afficher les service accounts (users) et les namespaces avec une commande courte.
+
+#### Installer Lens
+
+Lens est une interface graphique (un client “lourd”) pour Kubernetes. Elle se connecte en utilisant kubectl et la configuration `~/.kube/config` par défaut et nous permettra d’accéder à un dashboard puissant et agréable à utiliser.
+
+Vous pouvez l’installer en lançant ces commandes :
+
+    ```
+    ## Install Lens
+    curl -LO https://github.com/lensapp/lens/releases/download/v4.1.4/Lens-4.1.4.amd64.deb
+    sudo dpkg -i Lens-4.1.4.amd64.deb
+    ```
+    
+
+*   Lancez l’application `Lens` dans le menu “internet” de votre machine VNC
+*   Sélectionnez le cluster Scaleway en cliquant sur le bouton plus au lancement
+*   Explorons ensemble les ressources dans les différentes rubriques et namespaces
