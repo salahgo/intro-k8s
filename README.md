@@ -107,7 +107,7 @@ Cette commande crée un objet de type `deployment`. Nous pourvons étudier ce de
 
 A ce stade impossible d’afficher l’application : le déploiement n’est pas encore accessible de l’extérieur du cluster. Pour régler cela nous devons l’exposer grace à un service :
 
-*   `kubectl expose deployment nginx-demo --type=NodePort --port=8080 --name=nginx-demo-service`
+*   `kubectl expose deployment nginx-demo --type=NodePort --port=80 --name=nginx-demo-service`
     
 *   Affichons la liste des services pour voir le résultat: `kubectl get services`
     
