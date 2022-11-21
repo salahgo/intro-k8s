@@ -156,6 +156,4 @@ Vous pouvez l’installer en lançant ces commandes :
     
     
 
-*   Lancez l’application `Lens` dans le menu “internet” de votre machine VNC
-*   Sélectionnez le cluster Scaleway en cliquant sur le bouton plus au lancement
-*   Explorons ensemble les ressources dans les différentes rubriques et namespaces
+*   Lancez l’application `Lens` depuis votre menu.
