@@ -151,8 +151,8 @@ Vous pouvez l’installer en lançant ces commandes :
 
     
     ## Install Lens
-    curl -LO https://github.com/lensapp/lens/releases/download/v4.1.4/Lens-4.1.4.amd64.deb
-    sudo dpkg -i Lens-4.1.4.amd64.deb
+    curl -LO https://api.k8slens.dev/binaries/Lens-2022.11.210737-latest.amd64.deb
+    sudo dpkg -i Lens-2022.11.210737-latest.amd64.deb
     
     
 
