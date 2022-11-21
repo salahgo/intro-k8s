@@ -121,8 +121,8 @@ Avec minikube ce forwarding de port doit être concrêtisé avec la commande `mi
 
 Une autre méthode pour accéder à un service (quel que soit sont type) en mode développement est de forwarder le traffic par l’intermédiaire de kubectl (et des composants kube-proxy installés sur chaque noeuds du cluster).
 
-*   Pour cela on peut par exemple lancer: `kubectl port-forward svc/nginx-demo-service 8080:8080 --address 127.0.0.1`
-*   Vous pouvez désormais accéder à votre app via via kubectl sur: `http://localhost:8080`. Quelle différence avec l’exposition précédente via minikube ?
+*   Pour cela on peut par exemple lancer: `kubectl port-forward svc/nginx-demo-service 8081:80 --address 127.0.0.1`
+*   Vous pouvez désormais accéder à votre app via via kubectl sur: `http://localhost:8081`. Quelle différence avec l’exposition précédente via minikube ?
 
 \=> Un seul conteneur s’affiche. En effet `kubectl port-forward` sert à créer une connexion de developpement/debug qui pointe toujours vers le même pod en arrière plan.
 
