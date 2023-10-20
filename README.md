@@ -142,18 +142,3 @@ Pour exposer cette application en production sur un véritable cluster, nous dev
 
 
 *   Essayez d’afficher les service accounts (users) et les namespaces avec une commande courte.
-
-#### Installer Lens
-
-Lens est une interface graphique (un client “lourd”) pour Kubernetes. Elle se connecte en utilisant kubectl et la configuration `~/.kube/config` par défaut et nous permettra d’accéder à un dashboard puissant et agréable à utiliser.
-
-Vous pouvez l’installer en lançant ces commandes :
-
-    
-    ## Install Lens
-    curl -LO https://api.k8slens.dev/binaries/Lens-2022.11.210737-latest.amd64.deb
-    sudo dpkg -i Lens-2022.11.210737-latest.amd64.deb
-    
-    
-
-*   Lancez l’application `Lens` depuis votre menu.
